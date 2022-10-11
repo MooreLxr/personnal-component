@@ -1,0 +1,33 @@
+.contextmenu {
+  position: absolute;
+  left: 10px;
+  top: 100px;
+  z-index: 3000;
+  list-style-type: none;
+  padding: 15px 10px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #333;
+  background: #ECECEC;
+  border: 1px solid rgba(216,216,216,1);
+  box-shadow: 0px 2px 4px 0px rgba(0,0,0,0.13);
+  border-radius: 8px;
+}
+.contextmenu ul {
+  margin: 0;
+  padding: 0;
+}
+.contextmenu li {
+  height: 28px;
+  line-height: 28px;
+  padding: 0 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.contextmenu li:hover, .contextmenu li.active {
+  background: #D8D8D8;
+}
