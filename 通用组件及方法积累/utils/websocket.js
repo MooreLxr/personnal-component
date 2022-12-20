@@ -4,7 +4,7 @@
  * 使用说明：
  * import CreateWebsocket from '@/utils/websocket'
  * const wsOpts = {
-    wsUrl: `${serverWS}/show-ability/ws/${mac}`,
+    wsUrl: `${serverWS}/show`-ability/ws/${mac}`,
     heartBeatData: {},// 心跳包
     onopen: () => {},
     onmessage: (result) => this.wsMessage(result),
@@ -44,7 +44,7 @@ CreateWebsocket.prototype = {
         }
       }
     } catch(e) {
-      console.log(e)
+      // console.log(e)
     }
     function wsOpen() {
       console.log('websocket connect success...')
@@ -59,7 +59,7 @@ CreateWebsocket.prototype = {
         const result = JSON.parse(e.data)
         _this.onmessage && _this.onmessage(result)
       } catch (e) {
-        console.log(e)
+        // console.log(e)
       }
     }
     function wsClose(e) {
@@ -105,6 +105,9 @@ CreateWebsocket.prototype = {
   },
   close() {
     this.ws.close()
+    this.heartTimer && clearInterval(this.heartTimer)
+    this.connectTimer && clearTimeout(this.connectTimer)
+    this.serverTimer && clearTimeout(this.serverTimer)
   }
 }
 
