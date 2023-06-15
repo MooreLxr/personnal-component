@@ -3,7 +3,7 @@
     <li v-for="(item, index) in ip" :key="index" class="ip-item">
       <input
         type="text"
-        v-model="item.value"
+        :value="item.value"
         class="ip-input"
         ref="ipInput"
         :maxlength="3"
@@ -15,7 +15,7 @@
         @copy="handleCopy($event)"
         @compositionstart="compositionstart($event, index)"
         @compositionend="compositionend($event, index)"
-        @input="changeIp($event, index)"
+        @input="handleInput($event, index, item)"
       />
       <span class="ip-dot" v-if="index < 3">.</span>
     </li>
@@ -46,7 +46,8 @@ export default {
     };
   },
   props: {
-    value: String
+    value: String,
+    type: String // ip类型，如果是subnetMask子网掩码，规则是不一样的
   },
   model: {
     prop: 'value',
@@ -57,45 +58,57 @@ export default {
       immediate: true,
       handler: function (newIp, oldIp) {
         if (!newIp) return this.ip = [{ value: '' }, { value: '' }, { value: '' }, { value: '' }]
-        this.ip = newIp.split('.').map(e => { return { value: e  } })
+        this.ip = newIp.split('.').map(e => { return { value: e } })
       }
     }
   },
   methods: {
-    changeIp(e, index) {
-      if (this.shouldRemoveText) {
-        const { value } = e.target
-        if (value.indexOf(this.shouldRemoveText) >= 0) {
-          this.ip[index].value = value.replace(
-            new RegExp(this.shouldRemoveText, 'g'),
-            ''
-          )
-          this.shouldRemoveText = ''
-          this.$nextTick(() => {
-            let currentEvent = this.$refs.ipInput[index].$el
-            currentEvent.selectionStart = this.beforePosition
-            currentEvent.selectionEnd = this.beforePosition
-          })
+    handleInput(e, index, item) {
+      this.$nextTick(() => {
+        if (this.shouldRemoveText) {
+          const { value } = e.target
+          if (value.indexOf(this.shouldRemoveText) >= 0) {
+            this.ip[index].value = value.replace(
+              new RegExp(this.shouldRemoveText, 'g'),
+              ''
+            )
+            this.shouldRemoveText = ''
+            this.$nextTick(() => {
+              let currentEvent = this.$refs.ipInput[index]
+              currentEvent.selectionStart = this.beforePosition
+              currentEvent.selectionEnd = this.beforePosition
+            })
+          }
+        } else {
+          item.value = e.target.value
+          // 当输入框输入三位数字后自动定位到下一个输入框
+          if (e.target.selectionStart === 3) {
+            this.$refs.ipInput[Math.min(index + 1, 3)].focus()
+          }
+          const resultIp = this.ip.map(item => item.value).join('.')
+          this.$emit('change', resultIp === '...' ? '' : resultIp)
         }
-      } else {
-        // 当输入框输入三位数字后自动定位到下一个输入框
-        if (e.target.selectionStart === 3) {
-          this.$refs.ipInput[Math.min(index + 1, 3)].focus()
-        }
-        const resultIp = this.ip.map(ip => ip.value).join('.')
-        this.$emit('change', resultIp)
-      }
+      })
     },
     focusInput() {
       this.showErrorTooltip = false
     },
     blurInput(e, index) {
-      const { value } = e.currentTarget
-      // 第一个IP段介于1~233间的值
+      const { value } = e.target
+      if (value === '') return
+      // 子网掩码第一个ip可以是255
+      if (this.type === 'subnetMask') {
+        if(+value > 255) {
+          this.ip[index].value = 255
+        }
+        return
+      }
+      // 第一个IP段介于1~223间的值
       if (index === 0 && value && +value === 0) {
-        this.$message.error('0不是有效项，请指定一个介于1~233间的值')
+        this.$message.error('0不是有效项，请指定一个介于1~223间的值')
         this.ip[index].value = 1
       }
+      // 第一个ip段<223
       if (index === 0 && +value > 223) {
         this.ip[index].value = 223
       }
@@ -156,7 +169,7 @@ export default {
           }
         case 'ArrowRight':
           // focus下一个输入框
-          if (item.value.toString().length === e.target.selectionStart) {
+          if (item.value && item.value.toString().length === e.target.selectionStart) {
             this.$refs.ipInput[Math.min(index + 1, 3)].focus()
           }
           break
@@ -216,7 +229,7 @@ export default {
   display: inline-flex;
   list-style: none;
   border: 1px solid #d9d9d9;
-  background-color: #fff;
+  background-color: #EAECF8;
   border-radius: 4px;
   padding: 0px 10px;
   justify-content: space-around;
@@ -248,7 +261,7 @@ export default {
   }
   .error-tootip {
     position: absolute;
-    bottom: -70px;
+    bottom: -94px;
     left: 50px;
     z-index: 999;
     min-width: 10px;
