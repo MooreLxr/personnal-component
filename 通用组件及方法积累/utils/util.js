@@ -222,26 +222,25 @@ export function downloadFile(blob, fileName) {
   }
 }
 /**
- * 下载文件
- * @param res  data:文件流  headers请求头
+ * 下载文件（验证过可以使用！！！）
+ * @param {*} file  文件流
+ * @param {*} headers 请求头
+ * @param {*} fileName 下载的文件名
  */
-export function dealDownloadFile(res) {
-  try{
-      const { data, headers } = res
-      let fileName = headers['download-filename']
-      fileName = decodeURIComponent(fileName)
-      // 此处当返回json文件时需要先对data进行JSON.stringify处理，其他类型文件不用做处理
-      const blob = new Blob([data], { type: headers['content-type'] })
-      let url = window.URL.createObjectURL(blob)
-      let a = document.createElement('a')
-      a.href = url
-      a.download = fileName
-      a.style.display = 'none'
-      document.body.appendChild(a)
-      a.click()
-      a.parentNode.removeChild(a)
-      window.URL.revokeObjectURL(url)
-  } catch(e){
+export function dealDownloadFile(file, headers, fileName=new Date().getTime()) {
+  try {
+    const blob = new Blob([file], { type: headers['content-type'] })
+    
+    let url = window.URL.createObjectURL(blob)
+    let a = document.createElement('a')
+    a.href = url
+    a.download = fileName
+    a.style.display = 'none'
+    document.body.appendChild(a)
+    a.click()
+    a.parentNode.removeChild(a)
+    window.URL.revokeObjectURL(url)
+  } catch (e) {
     console.log("download error : ", e)
   }
 }
