@@ -1,0 +1,19 @@
+.ui-treeselect {
+  .el-select-dropdown__wrap {
+    max-height: 320px !important;
+  }
+  .el-select-dropdown__item {
+    height: auto !important;
+    background-color: transparent !important;
+  }
+  .el-select-dropdown__item.is-disabled {
+    cursor: default;
+  }
+  .el-tree-node__label {
+    width: calc(100% - 30px);
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
