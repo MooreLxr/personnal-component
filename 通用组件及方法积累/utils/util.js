@@ -57,6 +57,21 @@ export function compareArray(source, target) {
     remainArray: remainArray
   }
 }
+/**
+ * 时间格式化
+ * @param {*} seconds 
+ * @returns 
+ */
+export function time2TextLabel(seconds) {
+  if (!seconds || seconds < 0) return ''
+  // 将秒转换成XX天XX小时XX分XX秒
+  const day = Math.floor(seconds / 24 / 3600)
+  const hour = Math.floor((seconds - day * 24 * 3600) / 3600)
+  const minute = Math.floor((seconds - day * 24 * 3600 - hour * 3600) / 60)
+  const s = seconds - day * 24 * 3600 - hour * 3600 - minute * 60
+  // return `${day}天${hour}小时${minute}分${s}秒`
+  return `${day}天${hour}小时${minute}分`
+}
 
 /**
  * 设置cookie
@@ -171,14 +186,32 @@ export function _object2string(object) {
   }
   return array.join('&')
 }
-
 /**
- * 生成0-9随机数
- * @return
+ *
+ * @param {*} arr 待分组数据
+ * @param {*} f 函数
+ * @returns map对象
+ * 使用例子：this.groupBy(this.serviceList, (item) => item.orgId)
  */
-export function getRandomNum0to9() {
-  return Math.floor(10 * Math.random()).toString()
+export function groupBy(arr, f) {
+  let map = new Map()
+  arr.forEach((obj) => {
+    // 根据传入的函数对数组每个对象产生一个key值
+    let key = f(obj)
+    map.set(key, map.get(key) || [])
+    map.get(key).push(obj)
+  })
+  let result = []
+  map.forEach((value, key) => {
+    result.push({
+      groupName: key,
+      children: value,
+      checkedIdList: []
+    })
+  })
+  return result
 }
+
 
 /**
  * 生成n位随机数
@@ -197,44 +230,54 @@ export function getIndexCode(x = 16) {
   } while (x > 13)
   return d + r
 }
-
-
-export function downloadFile(blob, fileName) {
-  if ('download' in document.createElement('a')) {
-    const downloadElement = document.createElement('a')
-    let href = ''
-    if (window.URL) {
-      href = window.URL.createObjectURL(blob)
-    } else {
-      href = window.webkitURL.createObjectURL(blob)
-    }
-    downloadElement.href = href
-    downloadElement.download = fileName
-    document.body.appendChild(downloadElement)
-    downloadElement.click()
-    if (window.URL) {
-      window.URL.revokeObjectURL(href)
-    } else {
-      document.body.removeChild(downloadElement)
-    }
+export function getColorInPercentage(value) {
+  if (value >= 90) {
+    return '#f56c6c'
+  } else if (value >= 75) {
+    return '#E6D32F'
   } else {
-    navigator.msSaveBlob(blob, fileName)
+    return '#409eff'
   }
 }
+
 /**
- * 下载文件（验证过可以使用！！！）
- * @param {*} file  文件流
- * @param {*} headers 请求头
+ * 生成随机颜色
+ * @returns 
+ */
+export function generateRandowColor() {
+  const r = Math.floor(Math.random() * 256)
+  const g = Math.floor(Math.random() * 256)
+  const b = Math.floor(Math.random() * 256)
+
+  const hexColor = '#' + rgbToHex(r) + rgbToHex(g) + rgbToHex(b)
+  return hexColor
+}
+function rgbToHex(rgb) {
+  const hex = rgb.toString(16)
+  return hex.length < 2 ? ('0' + hex) : hex
+}
+
+/**
+ * 下载文件
+ * @param {*} res { file文件流   headers 请求头 }
  * @param {*} fileName 下载的文件名
  */
-export function dealDownloadFile(file, headers, fileName=new Date().getTime()) {
+export function dealDownloadFile(res, fileName) {
   try {
-    const blob = new Blob([file], { type: headers['content-type'] })
+    const { data, headers } = res
+    const blob = new Blob([data], { type: headers['content-type'] })
+    let downloadFileName = ''
+    if (fileName) {
+      downloadFileName = fileName
+    } else {
+      downloadFileName = headers['content-disposition']?.split(';')[1]?.split('filename=')[1] || ''
+      downloadFileName = decodeURIComponent(downloadFileName)
+    }
     
     let url = window.URL.createObjectURL(blob)
     let a = document.createElement('a')
     a.href = url
-    a.download = fileName
+    a.download = downloadFileName
     a.style.display = 'none'
     document.body.appendChild(a)
     a.click()
