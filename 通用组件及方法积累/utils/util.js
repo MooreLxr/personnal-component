@@ -288,23 +288,6 @@ export function dealDownloadFile(res, fileName) {
   }
 }
 
-export function getBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    let imgResult = ''
-    reader.readAsDataURL(file)
-    reader.onload = () => {
-      imgResult = reader.result
-    }
-    reader.onerror = error => {
-      reject(error)
-    }
-    // 完成时
-    reader.onloadend = () => {
-      resolve(imgResult)
-    }
-  })
-}
 // 文件单位格式化
 export function formatSizeUnits(kb) {
     let units = ['KB', 'MB', 'GB', 'TB', 'PB'];
