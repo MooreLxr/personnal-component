@@ -262,3 +262,29 @@ export function closest(element, selector) {
   traverse(element);
   return targetNode;
 }
+
+/**
+ *
+ * @param {*} el DOM元素
+ * @param {*} destNum 目标位置（Number类型）
+ * @param {*} time 滚动用时（Number类型，单位ms）
+ */
+export function scrollToAnimation(el, destNum, time) {
+  if (!time) {
+    el.scrollTop = destNum
+    return
+  }
+  const intervalTime = 30 // 间隔时间
+  let animCount = time / intervalTime // 循环的次数
+  const perNum = destNum / animCount // 每次滚动的距离
+  let curTop = el.scrollTop // 当前滚动条的位置
+  const animTimer = setInterval(() => {
+    if (animCount > 0) {
+      animCount--
+      curTop += perNum
+      scrollToAnimation(el, curTop)
+    } else {
+      clearInterval(animTimer)
+    }
+  }, intervalTime)
+}
